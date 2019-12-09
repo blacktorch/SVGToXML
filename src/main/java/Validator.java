@@ -6,8 +6,11 @@ public class Validator {
 
     public Validator(Document document){
         this.document = document;
-        verifySVG();
 
+    }
+
+    public void runValidation(){
+        verifySVG();
     }
 
     private boolean verifySVG(){
@@ -32,8 +35,8 @@ public class Validator {
             System.err.println("Please specify the width of the SVG document");
             return false;
         }
-        if (document.getDocumentElement().hasAttribute("viewBox")){
-            isValidViewBoxRatio();
+        if (document.getDocumentElement().hasAttribute("viewBox") && !isValidViewBoxRatio()){
+            System.err.println("Invalid ViewBox specification");
         }
         return true;
     }
@@ -62,7 +65,6 @@ public class Validator {
             System.err.println("ViewBox has improper width to height ratio");
             return false;
         }
-
 
         return true;
     }

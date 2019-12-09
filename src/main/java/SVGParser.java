@@ -10,6 +10,7 @@ public class SVGParser {
             String uri = args[1];
             Document doc = f.createDocument(uri);
             Validator validator = new Validator(doc);
+            validator.runValidation();
 
         } catch (Exception ex) {
             ex.printStackTrace();
