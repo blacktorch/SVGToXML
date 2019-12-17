@@ -1,16 +1,44 @@
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.NodeList;
+import org.apache.xpath.operations.Mod;
+import org.w3c.dom.*;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class Validator {
 
     private Document document;
     private float viewHeight;
     private float viewWidth;
+    private List<Model> baseAtomics;
+    private List<Model> baseCoupled;
+    private List<Connection> baseConnections;
+    private Element topModelSVG;
+    private Map<String, Model> modelMap;
 
     public Validator(Document document) {
         this.document = document;
+        topModelSVG = document.getElementById("TOP");
+        baseAtomics = new ArrayList<>();
+        baseCoupled = new ArrayList<>();
+        baseConnections = new ArrayList<>();
+
+        List<Node> baseNodes = NodeParser.getFilteredNodeList(topModelSVG.getChildNodes());
+
+        for (int i = 0; i < baseNodes.size(); i++){
+            if (NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "component").equals("submodel") &&
+                    NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "type").equals("coupled")){
+                baseCoupled.add(NodeParser.parseCoupledModel(baseNodes.get(i)));
+            } else if ((NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "component").equals("submodel") &&
+                    NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "type").equals("atomic"))){
+                baseAtomics.add(NodeParser.parseAtomicModel(baseNodes.get(i)));
+            } else if ((NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "component").equals("connections"))){
+                baseConnections = NodeParser.parseConnections(baseNodes.get(i));
+            }
+        }
+
+        mapModels(baseAtomics, baseCoupled);
 
     }
 
@@ -129,6 +157,16 @@ public class Validator {
         return true;
     }
 
+    private void mapModels(List<Model> atomics, List<Model> coupled){
+        modelMap = new HashMap<>();
+        for(Model atomic : atomics){
+            modelMap.put(atomic.getId(), atomic);
+        }
+        for (Model couple : coupled ){
+            modelMap.put(couple.getId(), couple);
+        }
+    }
+
     public Document getDocument() {
         return document;
     }
@@ -139,5 +177,25 @@ public class Validator {
 
     public float getViewWidth() {
         return viewWidth;
+    }
+
+    public List<Model> getBaseAtomics() {
+        return baseAtomics;
+    }
+
+    public List<Model> getBaseCoupled() {
+        return baseCoupled;
+    }
+
+    public List<Connection> getBaseConnections() {
+        return baseConnections;
+    }
+
+    public Element getTopModelSVG() {
+        return topModelSVG;
+    }
+
+    public Map<String, Model> getModelMap() {
+        return modelMap;
     }
 }
