@@ -166,7 +166,7 @@ public final class NodeParser {
         String cppClass = getAttributeValue(attr, "class");
         Graphics graphics = null;
 
-        boolean hasParam = Boolean.getBoolean(getAttributeValue(attr, "has-param"));
+        boolean hasParam = Boolean.parseBoolean(getAttributeValue(attr, "has-param"));
         if (hasParam){
             int paramNo = Integer.parseInt(getAttributeValue(attr, "param-no"));
             for (int i = 0; i < paramNo; i++){
@@ -175,7 +175,6 @@ public final class NodeParser {
                 String value = getAttributeValue(attr,"param" + (i+1) + "-value");
                 Parameter parameter = new Parameter(type,name,value);
                 parameters.add(parameter);
-                System.out.println(name);
             }
 
         }
@@ -195,9 +194,57 @@ public final class NodeParser {
 
     }
 
-//    public static CoupledModel parseCoupledModel(Node coupledNode){
-//
-//    }
+    public static CoupledModel parseCoupledModel(Node coupledNode){
+        NamedNodeMap attr = coupledNode.getAttributes();
+        List<Parameter> parameters = new ArrayList<>();
+        List<Model> subModels = new ArrayList<>();
+        List<Connection> connections = new ArrayList<>();
+        String id = getAttributeValue(attr, "id");
+        String cppClass = getAttributeValue(attr, "class");
+        Graphics graphics = null;
+
+        boolean hasParam = Boolean.parseBoolean(getAttributeValue(attr, "has-param"));
+        if (hasParam){
+            int paramNo = Integer.parseInt(getAttributeValue(attr, "param-no"));
+            for (int i = 0; i < paramNo; i++){
+                String type = getAttributeValue(attr, "param" + (i+1) + "-type");
+                String name = getAttributeValue(attr,"param" + (i+1) + "-name");
+                String value = getAttributeValue(attr,"param" + (i+1) + "-value");
+                Parameter parameter = new Parameter(type,name,value);
+                parameters.add(parameter);
+                System.out.println(name);
+            }
+
+        }
+
+        List<Node> filtered = getFilteredNodeList(coupledNode.getChildNodes());
+        if (filtered.size() > 0){
+            for(int j = 0; j < filtered.size(); j++){
+                if (getAttributeValue(filtered.get(j).getAttributes(), "component").equals("graphics")){
+
+                    graphics = parseGraphics(filtered.get(j));
+
+                } else if (getAttributeValue(filtered.get(j).getAttributes(), "component").equals("submodel") &&
+                        getAttributeValue(filtered.get(j).getAttributes(), "type").equals("atomic")){
+
+                    subModels.add(parseAtomicModel(filtered.get(j)));
+
+                } else if (getAttributeValue(filtered.get(j).getAttributes(), "component").equals("connections")){
+
+                    connections = parseConnections(filtered.get(j));
+
+                } else if (getAttributeValue(filtered.get(j).getAttributes(), "component").equals("submodel") &&
+                        getAttributeValue(filtered.get(j).getAttributes(), "type").equals("coupled")){
+
+                    subModels.add(parseCoupledModel(filtered.get(j)));
+                }
+            }
+        }
+
+        CoupledModel coupledModel = new CoupledModel("coupled", subModels, id, cppClass, parameters,graphics, coupledNode.getParentNode(), connections);
+        coupledModel.setHasParameters(hasParam);
+        return coupledModel;
+    }
 
     public static List<Node> getFilteredNodeList(NodeList nodeList){
         List<Node> list = new ArrayList<>();
@@ -211,6 +258,13 @@ public final class NodeParser {
     }
 
     public static String getAttributeValue(NamedNodeMap attr, String name){
-        return attr.getNamedItem(name).getTextContent();
+
+        if (attr.getNamedItem(name) != null){
+            //System.out.println(attr.getNamedItem(name).getTextContent());
+            return attr.getNamedItem(name).getTextContent();
+        } else {
+            return "__NULL__";
+        }
+
     }
 }

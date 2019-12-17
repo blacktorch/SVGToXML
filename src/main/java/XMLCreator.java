@@ -58,6 +58,18 @@ public class XMLCreator {
 
                 baseNodes = NodeParser.getFilteredNodeList(topModelSVG.getChildNodes());
 
+                for (int i = 0; i < baseNodes.size(); i++){
+                    if (NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "component").equals("submodel") &&
+                            NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "type").equals("coupled")){
+                        baseCoupled.add(NodeParser.parseCoupledModel(baseNodes.get(i)));
+                    } else if ((NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "component").equals("submodel") &&
+                            NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "type").equals("atomic"))){
+                        baseAtomics.add(NodeParser.parseAtomicModel(baseNodes.get(i)));
+                    } else if ((NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "component").equals("connections"))){
+                        baseConnections = NodeParser.parseConnections(baseNodes.get(i));
+                    }
+                }
+
                 NodeParser.parseConnections(baseNodes.get(2));
                 //System.out.println(baseNodes.get(2).getAttributes().getNamedItem("component").getTextContent());
 
