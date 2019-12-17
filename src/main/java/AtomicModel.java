@@ -4,7 +4,7 @@ import java.util.List;
 
 public class AtomicModel extends Model {
 
-    public AtomicModel(String type, List<Model> subModels, String id, String cppClass, List<Parameter> parameters, Graphics graphics, Node parent){
+    public AtomicModel(String type, String id, String cppClass, List<Parameter> parameters, Graphics graphics, Node parent){
         this.setType(type);
         this.setId(id);
         this.setCppClass(cppClass);
@@ -12,5 +12,5 @@ public class AtomicModel extends Model {
         this.setGraphics(graphics);
         this.setParent(parent);
     }
-    
+
 }
