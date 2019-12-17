@@ -3,12 +3,14 @@ import org.w3c.dom.Node;
 import java.util.List;
 
 public class CoupledModel extends Model {
-    private List<Model> subModels;
+    private List<Model> atomicSubModels;
+    private List<Model> coupledSubModels;
     private List<Connection> connections;
 
-    public CoupledModel(String type, List<Model> subModels, String id, String cppClass, List<Parameter> parameters, Graphics graphics, Node parent, List<Connection> connections){
+    public CoupledModel(String type, List<Model> atomicSubModels, List<Model> coupledSubModels, String id, String cppClass, List<Parameter> parameters, Graphics graphics, Node parent, List<Connection> connections){
         this.setType(type);
-        this.subModels = subModels;
+        this.atomicSubModels = atomicSubModels;
+        this.coupledSubModels = coupledSubModels;
         this.setId(id);
         this.setCppClass(cppClass);
         this.setParameters(parameters);
@@ -17,11 +19,19 @@ public class CoupledModel extends Model {
         this.connections = connections;
     }
 
-    public List<Model> getSubModels() {
-        return subModels;
+    public List<Model> getAtomicSubModels() {
+        return atomicSubModels;
     }
 
-    public void setSubModels(List<Model> subModels) {
-        this.subModels = subModels;
+    public void setAtomicSubModels(List<Model> atomicSubModels) {
+        this.atomicSubModels = atomicSubModels;
+    }
+
+    public List<Connection> getConnections() {
+        return connections;
+    }
+
+    public List<Model> getCoupledSubModels() {
+        return coupledSubModels;
     }
 }

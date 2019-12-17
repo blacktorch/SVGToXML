@@ -38,6 +38,7 @@ public class Validator {
             }
         }
 
+        modelMap = new HashMap<>();
         mapModels(baseAtomics, baseCoupled);
 
     }
@@ -158,12 +159,14 @@ public class Validator {
     }
 
     private void mapModels(List<Model> atomics, List<Model> coupled){
-        modelMap = new HashMap<>();
+
         for(Model atomic : atomics){
             modelMap.put(atomic.getId(), atomic);
         }
         for (Model couple : coupled ){
             modelMap.put(couple.getId(), couple);
+            CoupledModel coupledModel = (CoupledModel)couple;
+            mapModels(coupledModel.getAtomicSubModels(), coupledModel.getCoupledSubModels());
         }
     }
 

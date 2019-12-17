@@ -1,0 +1,123 @@
+<svg 
+    xmlns="http://www.w3.org/2000/svg"
+    id="svg8"
+    version="1.1"
+    viewBox="0 0 1200 600"
+    height="200mm"
+    width="400mm">
+
+   <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
+            markerWidth="6" markerHeight="6"
+            orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" />
+        </marker>
+  </defs>
+
+  <g id="TOP" fill="white" stroke="black" stroke-width="2">
+    <g id="input_reader" component="submodel" type="atomic" class="InputReader_Int" has-param="true" 
+    param-no="1" param1-type="const char*" param1-name="sFilename" param1-value="input_abp_1.txt">     
+    </g>
+    <g id="ABP" component="submodel" type="coupled" class="ABP">
+        <g component="graphics">
+            <rect id="abp" x="100" y="10" width="900" height="500"/>
+            <text x="120" y="45" fill="black" stroke-width="0" font-size="16">ABP Simulator</text>
+        </g>
+        <g component="submodel" id="sender1" type="atomic" class="Sender">
+            <g component="graphics">
+                <rect x="150" y="120" width="150" height="300" stroke="black" fill="transparent" stroke-width="2"/>
+                <text x="200" y="250" fill="black" stroke-width="0" font-size="16">Sender</text>
+            </g>
+        </g>
+        <g component="submodel" id="Network" type="coupled" class="Network">
+            <g component="graphics">
+                <rect x="400" y="120" width="300" height="300" stroke="black" fill="transparent" stroke-width="2"/>
+    	        <text x="520" y="150" fill="black" stroke-width="0" font-size="16">Network</text>   
+            </g>
+            <g component="submodel" id="subnet1" type="atomic" class="Subnet">
+                <g component="graphics">
+                    <rect width="120" height="50" x="490" y="200"/>
+                    <text x="520" y="230" fill="black" stroke-width="0" font-size="16">subnet1</text> 
+                </g>
+                
+            </g>
+            <g component="submodel" id="subnet2" type="atomic" class="Subnet">
+                <g component="graphics">
+                    <rect width="120" height="50" x="490" y="300"/>
+                    <text x="520" y="330" fill="black" stroke-width="0" font-size="16">subnet2</text> 
+                </g>
+                
+            </g>
+            <g component="connections">
+                <g type="eic" in-coupled="inp_1" submodel="subnet1" in-submodel="in" message-type="Message_t">
+                    <text x="420" y="223" fill="black" stroke-width="0" font-size="14">in1</text>
+                    <line x1="400" x2="484" y1="225" y2="225" stroke-width="2" marker-end="url(#arrow)"/>
+                </g>
+                <g type="eic" in-coupled="inp_2" submodel="subnet2" in-submodel="in" message-type="Message_t">
+                    <text x="640" y="323" fill="black" stroke-width="0" font-size="14">in2</text>
+                    <line x1="700" x2="614" y1="325" y2="325" stroke-width="2" marker-end="url(#arrow)"/>
+                </g>
+                <g type="eoc" out-coupled="outp_1" submodel="subnet1" out-submodel="out" message-type="Message_t">
+                    <text x="625" y="223" fill="black" stroke-width="0" font-size="14">out1</text>
+                    <line x1="610" x2="694" y1="225" y2="225" stroke-width="2" marker-end="url(#arrow)"/>
+                </g>
+                <g type="eoc" out-coupled="outp_2" submodel="subnet1" out-submodel="out" message-type="Message_t">
+                    <text x="425" y="323" fill="black" stroke-width="0" font-size="14">out2</text>
+                    <line x1="490" x2="404" y1="325" y2="325" stroke-width="2" marker-end="url(#arrow)"/>
+                </g>
+
+                
+            </g>
+            
+        </g>
+        <g component="submodel" id="receiver1" type="atomic" class="Receiver">
+            <g component="graphics">
+                <rect x="800" y="120" width="150" height="300" stroke="black" fill="transparent" stroke-width="2"/>
+                <text x="850" y="250" fill="black" stroke-width="0" font-size="16">Receiver</text>
+            </g>
+        </g>
+        <g component="connections">
+            <g type="eic" in-coupled="inp_control" submodel="sender1" in-submodel="controlIn" message-type="int">
+                <text x="25" y="198" fill="black" stroke-width="0" font-size="14">controlIn</text>
+                <line x1="10" x2="144" y1="200" y2="200" stroke-width="2" marker-end="url(#arrow)"/>
+            </g>
+            <g type="eoc" out-coupled="outp_ack" submodel="sender1" out-submodel="ackReceivedOut" message-type="int">
+                <text x="25" y="278" fill="black" stroke-width="0" font-size="14">ackReceived</text>
+                <line x1="150" x2="10" y1="280" y2="280" stroke-width="2" marker-end="url(#arrow)"/>
+            </g>
+            <g type="eoc" out-coupled="outp_pack" submodel="sender1" out-submodel="packetSentOut" message-type="int">
+                <text x="25" y="348" fill="black" stroke-width="0" font-size="14">packetSent</text>
+                <line x1="150" x2="10" y1="350" y2="350" stroke-width="2" marker-end="url(#arrow)"/>
+            </g>
+            <g type="ic" from="sender1" out-from="dataOut" to="Network" in-to="inp_1">
+                <text x="325" y="223" fill="black" stroke-width="0" font-size="14">dataOut</text>
+                <line x1="300" x2="394" y1="225" y2="225" stroke-width="2" marker-end="url(#arrow)"/>
+            </g>
+            <g type="ic" from="Network" out-from="outp_2" to="sender1" in-to="ackIn">
+                <text x="325" y="323" fill="black" stroke-width="0" font-size="14">ackIn</text>
+                <line x1="400" x2="304" y1="325" y2="325" stroke-width="2" marker-end="url(#arrow)"/>
+            </g>
+            <g type="ic" from="Network" out-from="outp_1" to="receiver1" in-to="in">
+                <text x="725" y="223" fill="black" stroke-width="0" font-size="14">in</text>
+                <line x1="700" x2="794" y1="225" y2="225" stroke-width="2" marker-end="url(#arrow)"/>
+            </g>
+            <g type="ic" from="receiver1" out-from="out" to="Network" in-to="inp_2">
+                <text x="725" y="323" fill="black" stroke-width="0" font-size="14">out</text>
+                <line x1="800" x2="704" y1="325" y2="325" stroke-width="2" marker-end="url(#arrow)"/>
+            </g>
+            
+        </g>
+        
+        
+    </g>
+    <g component="connections">
+        <g type="eoc" out-coupled="outp_pack" submodel="ABP" out-submodel="outp_pack" message-type="int">
+        </g>
+        <g type="eoc" out-coupled="outp_ack" submodel="ABP" out-submodel="outp_ack" message-type="int">
+        </g>
+        <g type="ic" from="input_reader" out-from="out" to="ABP" in-to="inp_control" message-type="int">
+        </g>
+        
+    </g>
+  </g>
+</svg>

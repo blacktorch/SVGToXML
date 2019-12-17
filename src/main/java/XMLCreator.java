@@ -72,6 +72,48 @@ public class XMLCreator {
 
     }
 
+    public void createModels(List<Model> models){
+        for (Model model : models) {
+            if (model.getType().equals("coupled")){
+                CoupledModel coupledModel = (CoupledModel)model;
+                File file = new File(directory, coupledModel.getId()+".xml");
+                if (file.exists()){
+                    file.delete();
+                }
+                try {
+                    if (file.createNewFile()){
+                        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+                        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
+                        Document document = documentBuilder.newDocument();
+
+                        Element root = document.createElement("coupledModel");
+                        document.appendChild(root);
+
+                        Attr attr = document.createAttribute("name");
+                        attr.setValue(coupledModel.getId());
+                        root.setAttributeNode(attr);
+
+                        writePorts(document,root,coupledModel.getConnections());
+                        writeComponents(document, root, coupledModel.getAtomicSubModels(), coupledModel.getCoupledSubModels());
+                        writeConnections(document, root, coupledModel.getConnections());
+
+                        TransformerFactory transformerFactory = TransformerFactory.newInstance();
+                        Transformer transformer = transformerFactory.newTransformer();
+                        DOMSource domSource = new DOMSource(document);
+                        StreamResult streamResult = new StreamResult(file);
+                        transformer.transform(domSource, streamResult);
+                    }
+
+                } catch (IOException | ParserConfigurationException | TransformerException e) {
+                    e.printStackTrace();
+                }
+                createModels(coupledModel.getCoupledSubModels());
+            }
+
+        }
+
+    }
+
     private void writePorts(Document doc, Element root, List<Connection> connections) {
         Element ports = doc.createElement("ports");
         root.appendChild(ports);
@@ -109,6 +151,11 @@ public class XMLCreator {
     private void writeComponents(Document doc, Element root, List<Model> atomics, List<Model> coupled) {
         Element components = doc.createElement("components");
         root.appendChild(components);
+        writeAtomicComponents(doc, components, atomics);
+        writeCoupledComponents(doc, components, coupled);
+    }
+
+    private void writeAtomicComponents(Document doc, Element components, List<Model> atomics){
         for (Model model : atomics) {
             Element submodel = doc.createElement("submodel");
             AtomicModel atomicModel = (AtomicModel) model;
@@ -133,6 +180,9 @@ public class XMLCreator {
             }
             components.appendChild(submodel);
         }
+    }
+
+    private void writeCoupledComponents(Document doc, Element components, List<Model> coupled){
         for (Model model : coupled) {
             Element submodel = doc.createElement("submodel");
             CoupledModel coupledModel = (CoupledModel) model;
@@ -204,6 +254,7 @@ public class XMLCreator {
                     IC icConnection = (IC) con;
                     ic.setAttribute("from_submodel", icConnection.getFrom());
                     ic.setAttribute("to_submodel", icConnection.getTo());
+
 
                     if (icConnection.getFrom().equals("input_reader")){
                         ic.setAttribute("out_port_from", PORT_STREAM_PREFIX + icConnection.getMessageType() + PORT_STREAM_SUFFIX);

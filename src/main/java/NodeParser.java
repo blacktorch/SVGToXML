@@ -197,7 +197,8 @@ public final class NodeParser {
     public static CoupledModel parseCoupledModel(Node coupledNode){
         NamedNodeMap attr = coupledNode.getAttributes();
         List<Parameter> parameters = new ArrayList<>();
-        List<Model> subModels = new ArrayList<>();
+        List<Model> atomicSubModels = new ArrayList<>();
+        List<Model> coupledSubModels = new ArrayList<>();
         List<Connection> connections = new ArrayList<>();
         String id = getAttributeValue(attr, "id");
         String cppClass = getAttributeValue(attr, "class");
@@ -227,7 +228,7 @@ public final class NodeParser {
                 } else if (getAttributeValue(filtered.get(j).getAttributes(), "component").equals("submodel") &&
                         getAttributeValue(filtered.get(j).getAttributes(), "type").equals("atomic")){
 
-                    subModels.add(parseAtomicModel(filtered.get(j)));
+                    atomicSubModels.add(parseAtomicModel(filtered.get(j)));
 
                 } else if (getAttributeValue(filtered.get(j).getAttributes(), "component").equals("connections")){
 
@@ -236,12 +237,12 @@ public final class NodeParser {
                 } else if (getAttributeValue(filtered.get(j).getAttributes(), "component").equals("submodel") &&
                         getAttributeValue(filtered.get(j).getAttributes(), "type").equals("coupled")){
 
-                    subModels.add(parseCoupledModel(filtered.get(j)));
+                    coupledSubModels.add(parseCoupledModel(filtered.get(j)));
                 }
             }
         }
 
-        CoupledModel coupledModel = new CoupledModel("coupled", subModels, id, cppClass, parameters,graphics, coupledNode.getParentNode(), connections);
+        CoupledModel coupledModel = new CoupledModel("coupled", atomicSubModels, coupledSubModels, id, cppClass, parameters,graphics, coupledNode.getParentNode(), connections);
         coupledModel.setHasParameters(hasParam);
         return coupledModel;
     }

@@ -16,6 +16,7 @@ public class SVGParser {
             if (svgValid){
                 XMLCreator xmlCreator = new XMLCreator("/Users/chidiebereonyedinma/Desktop/XMLFiles", validator);
                 xmlCreator.createTopModel();
+                xmlCreator.createModels(validator.getBaseCoupled());
             }
 
 
