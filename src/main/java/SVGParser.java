@@ -5,16 +5,22 @@ import org.w3c.dom.Document;
 public class SVGParser {
     public static void main(String[] args) {
         try {
+            boolean svgValid;
             String parser = XMLResourceDescriptor.getXMLParserClassName();
             SAXSVGDocumentFactory f = new SAXSVGDocumentFactory(parser);
             String uri = args[1];
             Document doc = f.createDocument(uri);
             Validator validator = new Validator(doc);
-            validator.runValidation();
+            svgValid = validator.runValidation();
+
+            if (svgValid){
+                XMLCreator xmlCreator = new XMLCreator("/Users/chidiebereonyedinma/Desktop/XMLFiles", validator);
+                xmlCreator.createTopModel();
+            }
+
 
         } catch (Exception ex) {
             ex.printStackTrace();
-            // ...
         }
     }
 }
