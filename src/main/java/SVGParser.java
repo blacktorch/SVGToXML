@@ -17,6 +17,8 @@ public class SVGParser {
                 XMLCreator xmlCreator = new XMLCreator("/Users/chidiebereonyedinma/Desktop/XMLFiles", validator);
                 xmlCreator.createTopModel();
                 xmlCreator.createModels(validator.getBaseCoupled());
+            } else {
+                System.err.println("Invalid SVG File, please make sure SVG follows SVG DEVS Standard");
             }
 
 

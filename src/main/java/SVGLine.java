@@ -6,14 +6,16 @@ public class SVGLine {
    private int y1;
    private int y2;
    private int strokeWidth;
+   private String markerId;
    private Node parent;
 
-   public SVGLine(int x1, int x2, int y1, int y2, int strokeWidth, Node parent){
+   public SVGLine(int x1, int x2, int y1, int y2, int strokeWidth, String markerId, Node parent){
        this.x1 = x1;
        this.x2 = x2;
        this.y1 = y1;
        this.y2 = y2;
        this.strokeWidth = strokeWidth;
+       this.markerId = markerId;
        this.parent = parent;
    }
 
@@ -61,7 +63,22 @@ public class SVGLine {
         return parent;
     }
 
+    public String getMarkerId() {
+        return markerId;
+    }
+
+    public void setMarkerId(String markerId) {
+        this.markerId = markerId;
+    }
+
     public void setParent(Node parent) {
         this.parent = parent;
+    }
+
+    public boolean isStraight(){
+        return x1 == x2 || y1 == y2;
+    }
+    public boolean isVertical(){
+       return x1 == x2;
     }
 }

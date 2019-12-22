@@ -10,7 +10,6 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class XMLCreator {
@@ -18,7 +17,8 @@ public class XMLCreator {
     private Validator validator;
 
 
-    private final static String TOP_XML_FILE = "TOP.xml";
+    private final static String XML_FILE = ".xml";
+
     private final static String PORT_STREAM_PREFIX = "iestream_input_defs<";
     private final static String PORT_STREAM_SUFFIX = ">::out";
     private final static String PORT_SUFFIX = "_defs::";
@@ -36,13 +36,13 @@ public class XMLCreator {
 
     }
 
-    public void createTopModel() {
-        File topModel = new File(directory, TOP_XML_FILE);
-        if (topModel.exists()) {
-            topModel.delete();
+    public void createCoupledModel(String modelId, List<Model> atomics, List<Model> coupled, List<Connection> connections){
+        File coupledModelFile = new File(directory, modelId+XML_FILE);
+        if (coupledModelFile.exists()) {
+            coupledModelFile.delete();
         }
         try {
-            if (topModel.createNewFile()) {
+            if (coupledModelFile.createNewFile()) {
 
                 DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
                 DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
@@ -52,23 +52,30 @@ public class XMLCreator {
                 document.appendChild(root);
 
                 Attr attr = document.createAttribute("name");
-                attr.setValue("TOP");
+                attr.setValue(modelId);
                 root.setAttributeNode(attr);
 
-                writePorts(document, root, validator.getBaseConnections());
-                writeComponents(document, root, validator.getBaseAtomics(), validator.getBaseCoupled());
-                writeConnections(document, root,validator.getBaseConnections());
+                writePorts(document, root, connections);
+                writeComponents(document, root, atomics, coupled);
+                writeConnections(document, root,connections);
 
                 TransformerFactory transformerFactory = TransformerFactory.newInstance();
                 Transformer transformer = transformerFactory.newTransformer();
                 DOMSource domSource = new DOMSource(document);
-                StreamResult streamResult = new StreamResult(topModel);
+                StreamResult streamResult = new StreamResult(coupledModelFile);
                 transformer.transform(domSource, streamResult);
             }
 
         } catch (IOException | ParserConfigurationException | TransformerException e) {
             e.printStackTrace();
+            System.err.println("Encountered error while creating coupled model file, deleting...");
+            coupledModelFile.delete();
         }
+    }
+
+    public void createTopModel() {
+        createCoupledModel("TOP", validator.getBaseAtomics(), validator.getBaseCoupled(),
+                validator.getBaseConnections());
 
     }
 
@@ -76,37 +83,8 @@ public class XMLCreator {
         for (Model model : models) {
             if (model.getType().equals("coupled")){
                 CoupledModel coupledModel = (CoupledModel)model;
-                File file = new File(directory, coupledModel.getId()+".xml");
-                if (file.exists()){
-                    file.delete();
-                }
-                try {
-                    if (file.createNewFile()){
-                        DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
-                        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-                        Document document = documentBuilder.newDocument();
-
-                        Element root = document.createElement("coupledModel");
-                        document.appendChild(root);
-
-                        Attr attr = document.createAttribute("name");
-                        attr.setValue(coupledModel.getId());
-                        root.setAttributeNode(attr);
-
-                        writePorts(document,root,coupledModel.getConnections());
-                        writeComponents(document, root, coupledModel.getAtomicSubModels(), coupledModel.getCoupledSubModels());
-                        writeConnections(document, root, coupledModel.getConnections());
-
-                        TransformerFactory transformerFactory = TransformerFactory.newInstance();
-                        Transformer transformer = transformerFactory.newTransformer();
-                        DOMSource domSource = new DOMSource(document);
-                        StreamResult streamResult = new StreamResult(file);
-                        transformer.transform(domSource, streamResult);
-                    }
-
-                } catch (IOException | ParserConfigurationException | TransformerException e) {
-                    e.printStackTrace();
-                }
+                createCoupledModel(coupledModel.getId(), coupledModel.getAtomicSubModels(),
+                        coupledModel.getCoupledSubModels(), coupledModel.getConnections());
                 createModels(coupledModel.getCoupledSubModels());
             }
 
@@ -169,15 +147,7 @@ public class XMLCreator {
                 submodel.setAttribute("xml_implementation", atomicModel.getCppClass() + ".devs");
             }
 
-            if (atomicModel.isHasParameters() && atomicModel.getParameters().size() != 0) {
-                for (Parameter parameter : atomicModel.getParameters()) {
-                    Element param = doc.createElement("param");
-                    param.setAttribute("type", parameter.getType());
-                    param.setAttribute("name", parameter.getName());
-                    param.setAttribute("value", parameter.getValue());
-                    submodel.appendChild(param);
-                }
-            }
+            checkAndWriteParameters(atomicModel, doc, submodel);
             components.appendChild(submodel);
         }
     }
@@ -191,16 +161,20 @@ public class XMLCreator {
             submodel.setAttribute("class_name", coupledModel.getCppClass());
             submodel.setAttribute("xml_implementation", coupledModel.getId() + ".xml");
 
-            if (coupledModel.isHasParameters() && coupledModel.getParameters().size() != 0) {
-                for (Parameter parameter : coupledModel.getParameters()) {
-                    Element param = doc.createElement("param");
-                    param.setAttribute("type", parameter.getType());
-                    param.setAttribute("name", parameter.getName());
-                    param.setAttribute("value", parameter.getValue());
-                    submodel.appendChild(param);
-                }
-            }
+            checkAndWriteParameters(coupledModel, doc, submodel);
             components.appendChild(submodel);
+        }
+    }
+
+    private void checkAndWriteParameters(Model model, Document doc, Element submodel){
+        if (model.isHasParameters() && model.getParameters().size() != 0) {
+            for (Parameter parameter : model.getParameters()) {
+                Element param = doc.createElement("param");
+                param.setAttribute("type", parameter.getType());
+                param.setAttribute("name", parameter.getName());
+                param.setAttribute("value", parameter.getValue());
+                submodel.appendChild(param);
+            }
         }
     }
 

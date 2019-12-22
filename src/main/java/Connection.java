@@ -35,4 +35,5 @@ public abstract class Connection {
     public void setMessageType(String messageType) {
         this.messageType = messageType;
     }
+
 }

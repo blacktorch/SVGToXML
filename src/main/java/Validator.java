@@ -16,6 +16,8 @@ public class Validator {
     private List<Connection> baseConnections;
     private Element topModelSVG;
     private Map<String, Model> modelMap;
+    private String markerId;
+    private boolean isModelValid;
 
     public Validator(Document document) {
         this.document = document;
@@ -26,14 +28,14 @@ public class Validator {
 
         List<Node> baseNodes = NodeParser.getFilteredNodeList(topModelSVG.getChildNodes());
 
-        for (int i = 0; i < baseNodes.size(); i++){
+        for (int i = 0; i < baseNodes.size(); i++) {
             if (NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "component").equals("submodel") &&
-                    NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "type").equals("coupled")){
+                    NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "type").equals("coupled")) {
                 baseCoupled.add(NodeParser.parseCoupledModel(baseNodes.get(i)));
             } else if ((NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "component").equals("submodel") &&
-                    NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "type").equals("atomic"))){
+                    NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "type").equals("atomic"))) {
                 baseAtomics.add(NodeParser.parseAtomicModel(baseNodes.get(i)));
-            } else if ((NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "component").equals("connections"))){
+            } else if ((NodeParser.getAttributeValue(baseNodes.get(i).getAttributes(), "component").equals("connections"))) {
                 baseConnections = NodeParser.parseConnections(baseNodes.get(i));
             }
         }
@@ -44,9 +46,11 @@ public class Validator {
     }
 
     public boolean runValidation() {
-        return verifySVG() &&
-        isMarkerValid() &&
-        isTopModelValid();
+        boolean isValid = verifySVG() &&
+                isMarkerValid() &&
+                isTopModelValid();
+        isModelsValid(baseCoupled);
+        return  isValid && isModelValid;
     }
 
     private boolean verifySVG() {
@@ -108,6 +112,7 @@ public class Validator {
         String path = "M 0 0 L 10 5 L 0 10 z";
         String viewBox = "0 0 10 10";
         String ref = "5";
+
         NodeList nodeList = document.getElementsByTagName("marker");
         boolean validAttributes;
 
@@ -123,6 +128,8 @@ public class Validator {
             return false;
         }
 
+        markerId = NodeParser.getAttributeValue(nodeList.item(0).getAttributes(), "id");
+
         validAttributes = isValidAttribute(nodeList.item(0).getAttributes(), "markerWidth", "6")
                 && isValidAttribute(nodeList.item(0).getAttributes(), "markerHeight", "6") &&
                 isValidAttribute(nodeList.item(0).getAttributes(), "viewBox", viewBox) &&
@@ -136,6 +143,8 @@ public class Validator {
                         isValidAttribute(nodeList.item(0).getChildNodes().item(i).getAttributes(), "d", path);
             }
         }
+
+        validAttributes = (!markerId.equals("__NULL__"));
 
 
         return validAttributes;
@@ -158,14 +167,208 @@ public class Validator {
         return true;
     }
 
-    private void mapModels(List<Model> atomics, List<Model> coupled){
+    private boolean isValidConnection(Connection connection) {
+        if (connection.getLine() != null) {
+            if (!connection.getLine().getMarkerId().equals(markerId)) {
+                System.err.println("Incorrect marker used for " + connection.getText().getText() + " connection");
+                return false;
+            }
+            switch (connection.getType()) {
+                case "eoc":
+                    EOC eoc = (EOC) connection;
+                    Model eocModel = modelMap.get(eoc.getSubModel());
+                    if (!eoc.getLine().isStraight()) {
+                        System.err.println("Connection " + eoc.getText().getText() + " is not straight, please check line");
+                        return false;
+                    }
+                    /*Check if orientation is horizontal*/
+                    if (!eoc.getLine().isVertical() && eoc.getLine().getX1() > eoc.getLine().getX2()) {
+                        if (!isWithinRange(eoc.getLine().getX1(), eocModel.getGraphics().getRect().getX(), 3)) {
+                            connectionErrorMessage(connection, eocModel, eocModel);
+                            return false;
+                        }
+                    } else if (!eoc.getLine().isVertical() && eoc.getLine().getX1() < eoc.getLine().getX2()) {
+                        if (!isWithinRange(eoc.getLine().getX1(), eocModel.getGraphics().getRect().getX() + eocModel.getGraphics().getRect().getWidth(), 3)) {
+                            connectionErrorMessage(connection, eocModel, eocModel);
+                            return false;
+                        }
+                    } else if (eoc.getLine().isVertical() && eoc.getLine().getY1() > eoc.getLine().getY2()) {
+                        if (!isWithinRange(eoc.getLine().getY1(), eocModel.getGraphics().getRect().getY(), 3)) {
+                            connectionErrorMessage(connection, eocModel, eocModel);
+                            return false;
+                        }
+                    } else if (eoc.getLine().isVertical() && eoc.getLine().getY1() < eoc.getLine().getY2()) {
+                        if (!isWithinRange(eoc.getLine().getY1(), eocModel.getGraphics().getRect().getY() + eocModel.getGraphics().getRect().getHeight(), 3)) {
+                            connectionErrorMessage(connection, eocModel, eocModel);
+                            return false;
+                        }
+                    }
+                    break;
+                case "eic":
+                    EIC eic = (EIC) connection;
+                    Model eicModel = modelMap.get(eic.getSubModel());
+                    if (!eic.getLine().isStraight()) {
+                        System.err.println("Connection " + eic.getText().getText() + " is not straight, please check line");
+                        return false;
+                    }
+                    /*Check if orientation is horizontal*/
+                    if (!eic.getLine().isVertical() && eic.getLine().getX1() > eic.getLine().getX2()) {
+                        if (!isWithinRange(eic.getLine().getX2(), eicModel.getGraphics().getRect().getX() + eicModel.getGraphics().getRect().getWidth(), 6)) {
+                            connectionErrorMessage(connection, eicModel, eicModel);
+                            return false;
+                        }
+                    } else if (!eic.getLine().isVertical() && eic.getLine().getX1() < eic.getLine().getX2()) {
+                        if (!isWithinRange(eic.getLine().getX2(), eicModel.getGraphics().getRect().getX(), 6)) {
+                            connectionErrorMessage(connection, eicModel, eicModel);
+                            return false;
+                        }
+                    } else if (eic.getLine().isVertical() && eic.getLine().getY1() > eic.getLine().getY2()) {
+                        if (!isWithinRange(eic.getLine().getY2(), eicModel.getGraphics().getRect().getY() + eicModel.getGraphics().getRect().getHeight(), 6)) {
+                            connectionErrorMessage(connection, eicModel, eicModel);
+                            return false;
+                        }
+                    } else if (eic.getLine().isVertical() && eic.getLine().getY1() < eic.getLine().getY2()) {
+                        if (!isWithinRange(eic.getLine().getY2(), eicModel.getGraphics().getRect().getY(), 6)) {
+                            connectionErrorMessage(connection, eicModel, eicModel);
+                            return false;
+                        }
+                    }
+                    break;
+                case "ic":
+                    IC ic = (IC) connection;
+                    Model modelFrom = modelMap.get(ic.getFrom());
+                    Model modelTo = modelMap.get(ic.getTo());
+                    if (!ic.getLine().isStraight()) {
+                        System.err.println("Connection " + ic.getText().getText() + " is not straight, please check line");
+                        return false;
+                    }
+                    /*Check if orientation is horizontal*/
+                    if (!ic.getLine().isVertical() && ic.getLine().getX1() > ic.getLine().getX2()) {
+                        if (!isWithinRange(ic.getLine().getX2(), modelTo.getGraphics().getRect().getX() + modelTo.getGraphics().getRect().getWidth(), 6) ||
+                                !isWithinRange(ic.getLine().getX1(), modelFrom.getGraphics().getRect().getX(), 3)) {
+                            connectionErrorMessage(connection, modelFrom, modelTo);
+                            return false;
+                        }
+                    } else if (!ic.getLine().isVertical() && ic.getLine().getX1() < ic.getLine().getX2()) {
+                        if (!isWithinRange(ic.getLine().getX1(), modelFrom.getGraphics().getRect().getX() + modelFrom.getGraphics().getRect().getWidth(), 3) ||
+                                !isWithinRange(ic.getLine().getX2(), modelTo.getGraphics().getRect().getX(), 6)) {
+                            connectionErrorMessage(connection, modelFrom, modelTo);
+                            return false;
+                        }
+                    } else if (ic.getLine().isVertical() && ic.getLine().getY1() > ic.getLine().getY2()) {
+                        if (!isWithinRange(ic.getLine().getY2(), modelTo.getGraphics().getRect().getY() + modelTo.getGraphics().getRect().getHeight(), 6) ||
+                                !isWithinRange(ic.getLine().getY1(), modelFrom.getGraphics().getRect().getY(), 3)) {
+                            connectionErrorMessage(connection, modelFrom, modelTo);
+                            return false;
+                        }
+                    } else if (ic.getLine().isVertical() && ic.getLine().getY1() < ic.getLine().getY2()) {
+                        if (!isWithinRange(ic.getLine().getY1(), modelFrom.getGraphics().getRect().getY() + modelFrom.getGraphics().getRect().getHeight(), 3) ||
+                                !isWithinRange(ic.getLine().getY2(), modelTo.getGraphics().getRect().getY(), 6)) {
+                            connectionErrorMessage(connection, modelFrom, modelTo);
+                            return false;
+                        }
+                    }
+                    break;
+            }
+        }
 
-        for(Model atomic : atomics){
+        return true;
+    }
+
+    private void connectionErrorMessage(Connection connection, Model a, Model b) {
+        if (connection.getType().equals("eoc") || connection.getType().equals("eic")) {
+            System.err.println("Check connection " + connection.getText().getText() + " with " + a.getGraphics().getText().getText());
+        } else {
+            System.err.println("Check connection " + connection.getText().getText() + " between " +
+                    a.getGraphics().getText().getText() + " and " + b.getGraphics().getText().getText());
+        }
+    }
+
+    private void isModelsValid(List<Model> models) {
+
+        for (Model model : models) {
+            if (model.getType().equals("coupled")) {
+                CoupledModel coupledModel = (CoupledModel) model;
+
+                if (validateModel(coupledModel)) {
+                    for (Connection connection : coupledModel.getConnections()) {
+                        isModelValid = isValidConnection(connection);
+                        if (!isModelValid) {
+                            break;
+                        }
+                    }
+                    if (!isModelValid) {
+                        break;
+                    }
+                    for (Model atomic : coupledModel.getAtomicSubModels()) {
+                        isModelValid = validateModel(atomic);
+                        if (!isModelValid) {
+                            break;
+                        }
+                    }
+                    if (!isModelValid) {
+                        break;
+                    }
+
+                    isModelsValid(coupledModel.getCoupledSubModels());
+                }
+            } else {
+                isModelValid = validateModel(model);
+            }
+
+        }
+
+    }
+
+    private boolean validateModel(Model model) {
+        boolean isValid = true;
+        String parentId = NodeParser.getAttributeValue(model.getParent().getAttributes(), "id");
+        if (!parentId.equals("TOP")) {
+            Model parent = modelMap.get(parentId);
+            if (parent.getGraphics() != null) {
+                if (isRectIntersect(parent.getGraphics().getRect(), model.getGraphics().getRect())) {
+                    System.err.println("Model " + model.getGraphics().getText().getText() + " is out of parent bounds");
+                    isValid = false;
+                } else if (isTextOutOfBounds(model.getGraphics().getRect(), model.getGraphics().getText())) {
+                    System.err.println("Text " + model.getGraphics().getText().getText() + " is out of bounds " + model.getId());
+                    isValid = false;
+                }
+            }
+
+        }
+
+
+        return isValid;
+    }
+
+    private boolean isWithinRange(int a, int b, int range) {
+        if (a == b) {
+            return true;
+        } else if (a < b && ((b - a) <= range)) {
+            return true;
+        } else if (a > b && ((a - b) <= range)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private boolean isRectIntersect(SVGRect a, SVGRect b) {
+        return b.getX() < a.getX() || (a.getWidth() + a.getX()) < (b.getX() + b.getWidth()) || b.getY() < a.getY() || (a.getHeight() + a.getY()) < (b.getY() + b.getHeight());
+    }
+
+    private boolean isTextOutOfBounds(SVGRect a, SVGText b) {
+        return b.getX() < a.getX() || b.getX() > (a.getX() + a.getWidth()) || b.getY() < a.getY() || b.getY() > (a.getY() + a.getHeight());
+    }
+
+    private void mapModels(List<Model> atomics, List<Model> coupled) {
+
+        for (Model atomic : atomics) {
             modelMap.put(atomic.getId(), atomic);
         }
-        for (Model couple : coupled ){
+        for (Model couple : coupled) {
             modelMap.put(couple.getId(), couple);
-            CoupledModel coupledModel = (CoupledModel)couple;
+            CoupledModel coupledModel = (CoupledModel) couple;
             mapModels(coupledModel.getAtomicSubModels(), coupledModel.getCoupledSubModels());
         }
     }

@@ -66,4 +66,5 @@ public abstract class Model {
     public void setHasParameters(boolean hasParameters) {
         this.hasParameters = hasParameters;
     }
+
 }
