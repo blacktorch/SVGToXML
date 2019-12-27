@@ -1,4 +1,15 @@
+package parser;
+
+import connections.Connection;
+import connections.EIC;
+import connections.EOC;
+import connections.IC;
+import models.AtomicModel;
+import models.CoupledModel;
+import models.Model;
+import models.Parameter;
 import org.w3c.dom.*;
+import validation.Validator;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -30,9 +41,11 @@ public class XMLCreator {
 
         File xmlDirectory = new File(directory);
 
-        if (!xmlDirectory.exists()) {
-            xmlDirectory.mkdir();
+        if (xmlDirectory.exists()) {
+            xmlDirectory.delete();
+
         }
+        xmlDirectory.mkdir();
 
     }
 

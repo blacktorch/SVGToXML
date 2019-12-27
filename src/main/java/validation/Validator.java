@@ -1,5 +1,15 @@
-import org.apache.xpath.operations.Mod;
+package validation;
+
+import connections.Connection;
+import connections.EIC;
+import connections.EOC;
+import connections.IC;
+import graphics.SVGRect;
+import graphics.SVGText;
+import models.CoupledModel;
+import models.Model;
 import org.w3c.dom.*;
+import parser.NodeParser;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -178,7 +188,7 @@ public class Validator {
                     EOC eoc = (EOC) connection;
                     Model eocModel = modelMap.get(eoc.getSubModel());
                     if (!eoc.getLine().isStraight()) {
-                        System.err.println("Connection " + eoc.getText().getText() + " is not straight, please check line");
+                        System.err.println("connections.Connection " + eoc.getText().getText() + " is not straight, please check line");
                         return false;
                     }
                     /*Check if orientation is horizontal*/
@@ -208,7 +218,7 @@ public class Validator {
                     EIC eic = (EIC) connection;
                     Model eicModel = modelMap.get(eic.getSubModel());
                     if (!eic.getLine().isStraight()) {
-                        System.err.println("Connection " + eic.getText().getText() + " is not straight, please check line");
+                        System.err.println("connections.Connection " + eic.getText().getText() + " is not straight, please check line");
                         return false;
                     }
                     /*Check if orientation is horizontal*/
@@ -239,7 +249,7 @@ public class Validator {
                     Model modelFrom = modelMap.get(ic.getFrom());
                     Model modelTo = modelMap.get(ic.getTo());
                     if (!ic.getLine().isStraight()) {
-                        System.err.println("Connection " + ic.getText().getText() + " is not straight, please check line");
+                        System.err.println("connections.Connection " + ic.getText().getText() + " is not straight, please check line");
                         return false;
                     }
                     /*Check if orientation is horizontal*/
@@ -327,7 +337,7 @@ public class Validator {
             Model parent = modelMap.get(parentId);
             if (parent.getGraphics() != null) {
                 if (isRectIntersect(parent.getGraphics().getRect(), model.getGraphics().getRect())) {
-                    System.err.println("Model " + model.getGraphics().getText().getText() + " is out of parent bounds");
+                    System.err.println("models.Model " + model.getGraphics().getText().getText() + " is out of parent bounds");
                     isValid = false;
                 } else if (isTextOutOfBounds(model.getGraphics().getRect(), model.getGraphics().getText())) {
                     System.err.println("Text " + model.getGraphics().getText().getText() + " is out of bounds " + model.getId());

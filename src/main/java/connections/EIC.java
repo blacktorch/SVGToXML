@@ -1,3 +1,8 @@
+package connections;
+
+import graphics.SVGLine;
+import graphics.SVGText;
+
 public class EIC extends Connection {
     private String inCoupled;
     private String inSubModel;

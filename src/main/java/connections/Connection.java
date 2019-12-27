@@ -1,3 +1,8 @@
+package connections;
+
+import graphics.SVGLine;
+import graphics.SVGText;
+
 public abstract class Connection {
    private String type;
    private SVGText text;

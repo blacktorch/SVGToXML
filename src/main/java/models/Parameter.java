@@ -1,3 +1,5 @@
+package models;
+
 public class Parameter {
     private String type;
     private String name;

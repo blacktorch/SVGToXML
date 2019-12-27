@@ -1,3 +1,8 @@
+package connections;
+
+import graphics.SVGLine;
+import graphics.SVGText;
+
 public class IC extends Connection {
     private String from;
     private String outFrom;

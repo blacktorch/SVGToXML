@@ -1,3 +1,17 @@
+package parser;
+
+import connections.Connection;
+import connections.EIC;
+import connections.EOC;
+import connections.IC;
+import graphics.Graphics;
+import graphics.SVGLine;
+import graphics.SVGRect;
+import graphics.SVGText;
+import models.AtomicModel;
+import models.CoupledModel;
+import models.Model;
+import models.Parameter;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;

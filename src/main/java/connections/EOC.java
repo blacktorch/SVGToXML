@@ -1,3 +1,8 @@
+package connections;
+
+import graphics.SVGLine;
+import graphics.SVGText;
+
 public class EOC extends Connection {
     private String outCoupled;
     private String outSubModel;
