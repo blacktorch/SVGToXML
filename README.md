@@ -1,4 +1,4 @@
-# SVGToXML DEVS models.Model Converter
+# SVGToXML DEVS Model Converter
 
 The DEVS formalism is a widely implemented modeling and simulation method used for both artificial and natural systems. 
 Scalable Vector graphics.Graphics (SVG) is a vector image format based on the Extensible Markup language (XML) for creating 
