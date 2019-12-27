@@ -1,0 +1,100 @@
+<svg 
+    xmlns="http://www.w3.org/2000/svg"
+    id="svg8"
+    version="1.1"
+    viewBox="0 0 1200 600"
+    height="200mm"
+    width="400mm">
+
+   <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="5" refY="5"
+            markerWidth="6" markerHeight="6"
+            orient="auto-start-reverse">
+        <path d="M 0 0 L 10 5 L 0 10 z" />
+        </marker>
+  </defs>
+
+   <g id="TOP" fill="white" stroke="black" stroke-width="2">
+        <g id="input_reader" component="submodel" type="atomic" class="InputReader_Int" has-param="true" 
+        param-no="1" param1-type="const char*" param1-name="sFilename" param1-value="input_bpcs.txt">     
+        </g>
+        <g id="BPCS" component="submodel" type="coupled" class="BPCS">
+
+            <g component="graphics">
+                <rect id="bpcs" x="100" y="40" width="800" height="550"/>
+                <text x="400" y="75" fill="black" stroke-width="0" font-size="16">Border Protection Control System</text>
+            </g>
+            <g id="UAV" component="submodel" type="coupled" class="UAV">
+                <g component="graphics">
+                    <rect x="150" y="124" width="620" height="420"/>
+                    <text x="400" y="160" fill="black" stroke-width="0" font-size="16">UAV</text>
+                </g>
+
+                <g id="hovering" component="submodel" type="atomic" class="Hovering">
+                    <g component="graphics">
+                        <rect x="210" y="190" width="500" height="100"/>
+                        <text x="430" y="240" fill="black" stroke-width="0" font-size="16">Hovering</text>
+                    </g>
+                </g>
+
+                <g id="search_and_locate" component="submodel" type="atomic" class="SearchAndLocateThreat">
+                    <g component="graphics">
+                        <rect x="210" y="390" width="200" height="100"/>
+                        <text x="230" y="440" fill="black" stroke-width="0" font-size="16">Search and Locate Threat</text>
+                    </g>
+                </g>
+
+                <g id="capture_image_location" component="submodel" type="atomic" class="CaptureImageAndLocation">
+                    <g component="graphics">
+                        <rect x="510" y="390" width="200" height="100"/>
+                        <text x="520" y="440" fill="black" stroke-width="0" font-size="16">Capture Image and Location</text>
+                    </g>
+                </g>
+
+                <g component="connections">
+                    <g type="eic" in-coupled="inId" submodel="hovering" in-submodel="inId" message-type="int">
+                        <text x="225" y="160" fill="black" stroke-width="0" font-size="14">inId</text>
+                        <line x1="250" x2="250" y1="120" y2="184" stroke-width="2" marker-end="url(#arrow)"/>
+                    </g>
+                    <g type="eoc" out-coupled="outp_threat_details" submodel="capture_image_location" out-submodel="threat_details" message-type="Threat_t">
+                        <text x="730" y="445" fill="black" stroke-width="0" font-size="14">td</text>
+                        <line x1="710" x2="763" y1="450" y2="450" stroke-width="2" marker-end="url(#arrow)"/>
+                    </g>
+                    <g type="ic" from="hovering" out-from="uav_alerted" to="search_and_locate" in-to="uav_alerted">
+                        <text x="250" y="350" fill="black" stroke-width="0" font-size="14">UAV alerted</text>
+                        <line x1="280" x2="280" y1="290" y2="384" stroke-width="2" marker-end="url(#arrow)"/>
+                    </g>
+                    <g type="ic" from="search_and_locate" out-from="found" to="capture_image_location" in-to="found">
+                        <text x="430" y="445" fill="black" stroke-width="0" font-size="14">Found</text>
+                        <line x1="410" x2="504" y1="450" y2="450" stroke-width="2" marker-end="url(#arrow)"/>
+                    </g>
+                    <g type="ic" from="capture_image_location" out-from="details_sent" to="hovering" in-to="threat_details_sent">
+                        <text x="560" y="350" fill="black" stroke-width="0" font-size="14">Threat details sent</text>
+                        <line x1="600" x2="600" y1="389" y2="294" stroke-width="2" marker-end="url(#arrow)"/>
+                    </g>
+                    
+                </g>
+            </g>
+            <g component="connections">
+                <g type="eic" in-coupled="intrusion_detected" submodel="UAV" in-submodel="inId" message-type="int">
+                    <text x="197" y="80" fill="black" stroke-width="0" font-size="14">Intrusion detected</text>
+                    <line x1="250" x2="250" y1="20" y2="120" stroke-width="2" marker-end="url(#arrow)"/>
+                </g>
+                <g type="eoc" out-coupled="outp_threat_details_received" submodel="UAV" out-submodel="outp_threat_details" message-type="int">
+                    <text x="788" y="445" fill="black" stroke-width="0" font-size="14">Send threat details</text>
+                    <line x1="770" x2="920" y1="450" y2="450" stroke-width="2" marker-end="url(#arrow)"/>
+                </g>
+            </g>
+            
+        </g>
+        <g component="connections">
+            <g type="eoc" out-coupled="outp_threat_details_received" submodel="BPCS" out-submodel="outp_threat_details_received" message-type="Threat_t">          
+            </g>
+            <g type="ic" from="input_reader" out-from="out" to="BPCS" in-to="intrusion_detected" message-type="int">
+            </g>
+            
+        </g>
+
+
+   </g>
+  </svg>
