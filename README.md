@@ -1,15 +1,15 @@
 # SVGToXML DEVS Model Converter
 
 The DEVS formalism is a widely implemented modeling and simulation method used for both artificial and natural systems. 
-Scalable Vector graphics.Graphics (SVG) is a vector image format based on the Extensible Markup language (XML) for creating 
+Scalable Vector Graphics (SVG) is a vector image format based on the Extensible Markup language (XML) for creating 
 two-dimensional graphics that can be animated and are interactive. With the increasing need of modeling and simulation, 
-most domain experts may have ideas of model they would want to create and run simulated tests with, but have little or 
+most domain experts may have ideas of models they would want to create and run simulated tests with, but have little or 
 no idea in computer programing. The aim of this project is to simplify the creation and simulation of DEVS model by allowing 
-the user draw the model that needs to be simulated in SVG and executing it without writing any computer program. This is 
-done by converting the drawn SVG to XML, and then to C++ code ready for execution with Cadmium which is a C++ based 
+the user draw the model that needs to be simulated in SVG, and executing it without writing any computer program. This is 
+done by converting the drawn SVG to XML, and then to C++ code ready for execution with [Cadmium](https://github.com/SimulationEverywhere/cadmium) which is a C++ based 
 library used for defining and executing DEVS models. This paper specifies the standard for defining DEVS coupled model 
 in SVG format and converting them to XML using a parser we implemented. The generated XML files can then be further used
- to generate C++ Cadmium code for execution
+ to generate C++ [Cadmium](https://github.com/SimulationEverywhere/cadmium) code for execution
  
  ## Organization
  > - University of Ottawa
